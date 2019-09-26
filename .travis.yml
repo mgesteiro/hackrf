@@ -30,10 +30,10 @@ addons:
       - python-yaml
 
   homebrew:
-    taps: PX4/homebrew-px4
+    taps: armmbed/formulae
     packages:
        - fftw
-       - armmbed/formulae/arm-none-eabi-gcc
+       - arm-none-eabi-gcc
        - dfu-util
 
 before_install:
