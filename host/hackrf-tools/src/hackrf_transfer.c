@@ -194,6 +194,26 @@ typedef struct
 t_u64toa ascii_u64_data1;
 t_u64toa ascii_u64_data2;
 
+// mg patch 01
+typedef struct
+{
+	char sig[4];
+	uint32_t dlen;
+	struct timespec ts;
+} t_packetheader;
+ 
+t_packetheader ph =
+{
+	"PKT\n",
+	0x00000000, 
+	{
+		0x00000000,
+		0x00000000
+	}
+};
+#define PH_SIZE sizeof(t_packetheader)
+// mg patch 01
+
 static float
 TimevalDiff(const struct timeval *a, const struct timeval *b)
 {
@@ -413,6 +433,11 @@ int rx_callback(hackrf_transfer* transfer) {
 #endif
 		    return 0;
 		} else {
+			// mg patch 02
+			ph.dlen=bytes_to_write;
+			clock_gettime(CLOCK_MONOTONIC_RAW, &(ph.ts));
+			fwrite(&ph, 1, PH_SIZE, fd);
+			// mg patch 02
 			bytes_written = fwrite(transfer->buffer, 1, bytes_to_write, fd);
 			if ((bytes_written != bytes_to_write)
 				|| (limit_num_samples && (bytes_to_xfer == 0))) {
@@ -1046,6 +1071,11 @@ int main(int argc, char** argv) {
 			    	len=_st-stream_head;
 				else
 			    	len=stream_size-stream_head;
+			    // mg patch 03
+				ph.dlen=len;
+				clock_gettime(CLOCK_MONOTONIC_RAW, &(ph.ts));
+				fwrite(&ph, 1, PH_SIZE, fd);
+				// mg patch 03
 				bytes_written = fwrite(stream_buf+stream_head, 1, len, fd);
 				if (len != bytes_written) {
 					fprintf(stderr, "write failed");
